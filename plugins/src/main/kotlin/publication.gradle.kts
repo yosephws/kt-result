@@ -1,54 +1,46 @@
+
 import java.util.Properties
 
 plugins {
     `maven-publish`
-    signing
+//    signing
 }
 
-ext["signing.key"] = null
-ext["signing.password"] = null
-ext["sonatype.username"] = null
-ext["sonatype.password"] = null
+//ext["signing.key"] = null
+//ext["signing.password"] = null
+//ext["sonatype.username"] = null
+//ext["sonatype.password"] = null
 
-val secretPropsFile = project.rootProject.file("local.properties")
-if (secretPropsFile.exists()) {
-    secretPropsFile.reader().use {
-        Properties().apply { load(it) }
-    }.onEach { (name, value) ->
-        ext[name.toString()] = value
-    }
-} else {
-    ext["signing.key"] = System.getenv("SIGNING_KEY")
-    ext["signing.password"] = System.getenv("SIGNING_PASSWORD")
-    ext["sonatype.username"] = System.getenv("SONATYPE_USERNAME")
-    ext["sonatype.password"] = System.getenv("SONATYPE_PASSWORD")
-}
-
+//val secretPropsFile = project.rootProject.file("local.properties")
+//if (secretPropsFile.exists()) {
+//    secretPropsFile.reader().use {
+//        Properties().apply { load(it) }
+//    }.onEach { (name, value) ->
+//        ext[name.toString()] = value
+//    }
+//} else {
+//    ext["signing.key"] = System.getenv("SIGNING_KEY")
+//    ext["signing.password"] = System.getenv("SIGNING_PASSWORD")
+//    ext["sonatype.username"] = System.getenv("SONATYPE_USERNAME")
+//    ext["sonatype.password"] = System.getenv("SONATYPE_PASSWORD")
+//}
+//
 val javadocJar by tasks.registering(Jar::class) {
     archiveClassifier.set("javadoc")
 }
 
-fun getExtraString(name: String) = ext[name]?.toString()
-
-val isReleaseBuild: Boolean
-    get() = properties.containsKey("release")
+//fun getExtraString(name: String) = ext[name]?.toString()
+//
+//val isReleaseBuild: Boolean
+//    get() = properties.containsKey("release")
 
 publishing {
     repositories {
         maven {
-            name = "sonatype"
-            url =
-                uri(
-                    if (isReleaseBuild) {
-                        "https://oss.sonatype.org/service/local/staging/deploy/maven2"
-                    } else {
-                        "https://oss.sonatype.org/content/repositories/snapshots"
-                    },
-                )
-
-            credentials {
-                username = getExtraString("sonatype.username")
-                password = getExtraString("sonatype.password")
+            url = uri("https://maven.pkg.github.com/yosephws/kt-result")
+            credentials(PasswordCredentials::class)
+            authentication {
+                create<BasicAuthentication>("basic")
             }
         }
     }
@@ -109,17 +101,17 @@ publishing {
         }
     }
 }
-
-signing {
-    val signingKey = project.ext["signing.key"] as? String
-    val signingPassword = project.ext["signing.password"] as? String
-    if (signingKey == null || signingPassword == null) return@signing
-
-    useInMemoryPgpKeys(signingKey, signingPassword)
-    sign(publishing.publications)
-}
-
-// TODO: remove after https://youtrack.jetbrains.com/issue/KT-46466 is fixed
-project.tasks.withType(AbstractPublishToMaven::class.java).configureEach {
-    dependsOn(project.tasks.withType(Sign::class.java))
-}
+//
+//signing {
+//    val signingKey = project.ext["signing.key"] as? String
+//    val signingPassword = project.ext["signing.password"] as? String
+//    if (signingKey == null || signingPassword == null) return@signing
+//
+//    useInMemoryPgpKeys(signingKey, signingPassword)
+//    sign(publishing.publications)
+//}
+//
+//// TODO: remove after https://youtrack.jetbrains.com/issue/KT-46466 is fixed
+//project.tasks.withType(AbstractPublishToMaven::class.java).configureEach {
+//    dependsOn(project.tasks.withType(Sign::class.java))
+//}
